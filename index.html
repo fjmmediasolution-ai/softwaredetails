@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="emerald">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DevClient Master - Cloud Firebase Suite</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2pdf Library for Invoices/Reports -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Firebase SDKs (Compat Versions: App, Auth, Firestore) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: 'var(--bg-main)',
+              card: 'var(--bg-card)',
+              sidebar: 'var(--bg-sidebar)',
+              border: 'var(--border-color)',
+              text: 'var(--text-main)',
+              muted: 'var(--text-muted)',
+              primary: 'var(--primary)',
+              primaryHover: 'var(--primary-hover)',
+              primaryLight: 'var(--primary-light)',
+              navText: 'var(--nav-text)',
+              navHoverBg: 'var(--nav-hover-bg)',
+              navHoverText: 'var(--nav-hover-text)',
+              navActiveBg: 'var(--nav-active-bg)',
+              navActiveText: 'var(--nav-active-text)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 1. EMERALD PRO (Light Modern Green) */
+    [data-theme="emerald"] {
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-sidebar: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #059669;
+      --primary-hover: #047857;
+      --primary-light: #ecfdf5;
+      --nav-text: #1e293b;
+      --nav-hover-bg: #ecfdf5;
+      --nav-hover-text: #059669;
+      --nav-active-bg: #d1fae5;
+      --nav-active-text: #059669;
+    }
+
+    /* 2. MIDNIGHT DARK (Cyber Slate Developer Dark) */
+    [data-theme="dark"] {
+      --bg-main: #020617;
+      --bg-card: #0f172a;
+      --bg-sidebar: #090d16;
+      --border-color: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: #1e1b4b;
+      --nav-text: #cbd5e1;
+      --nav-hover-bg: #1e293b;
+      --nav-hover-text: #818cf8;
+      --nav-active-bg: #1e1b4b;
+      --nav-active-text: #a5b4fc;
+    }
+
+    /* 3. ENTERPRISE NAVY (Royal Corporate Blue) */
+    [data-theme="navy"] {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-sidebar: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --nav-text: #1e293b;
+      --nav-hover-bg: #eff6ff;
+      --nav-hover-text: #2563eb;
+      --nav-active-bg: #dbeafe;
+      --nav-active-text: #1d4ed8;
+    }
+
+    /* 4. OBSIDIAN GOLD (Warm Charcoal & Gold) */
+    [data-theme="gold"] {
+      --bg-main: #09090b;
+      --bg-card: #18181b;
+      --bg-sidebar: #121215;
+      --border-color: #27272a;
+      --text-main: #fafafa;
+      --text-muted: #a1a1aa;
+      --primary: #d97706;
+      --primary-hover: #b45309;
+      --primary-light: #451a03;
+      --nav-text: #d4d4d8;
+      --nav-hover-bg: #27272a;
+      --nav-hover-text: #f59e0b;
+      --nav-active-bg: #451a03;
+      --nav-active-text: #fbbf24;
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg-main); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    @media (min-width: 768px) {
+      .sidebar-collapsed {
+        width: 72px !important;
+      }
+      .sidebar-collapsed .sidebar-text,
+      .sidebar-collapsed .sidebar-profile-details {
+        display: none !important;
+      }
+      .sidebar-collapsed .sidebar-header-box {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .sidebar-collapsed .nav-btn {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      #mainSidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px !important;
+        height: 100vh;
+        z-index: 60;
+        transition: left 0.3s ease-in-out;
+      }
+      #mainSidebar.mobile-open {
+        left: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-app-bg text-app-text font-sans min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Mobile Backdrop Overlay -->
+  <div id="mobileBackdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-black/60 z-50 hidden md:hidden"></div>
+
+  <!-- ================= AUTH PAGES (FIREBASE ONLY) ================= -->
+  <div id="authContainer" class="min-h-screen flex items-center justify-center p-4 bg-app-bg">
+    
+    <!-- LOGIN CARD -->
+    <div id="loginCard" class="w-full max-w-md bg-app-card border border-app-border p-6 sm:p-8 rounded-2xl shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="inline-flex p-3 bg-app-primaryLight border border-app-border rounded-xl text-app-primary mb-3 shadow-sm">
+          <i data-lucide="shield-check" class="w-8 h-8"></i>
+        </div>
+        <h2 class="text-2xl font-bold tracking-tight text-app-text">Korvexa Solution</h2>
+        <p class="text-xs text-app-muted mt-1">ERP Software</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase tracking-wider mb-1">Firebase Registered Email</label>
+          <div class="relative">
+            <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-3 text-app-muted"></i>
+<input type="email" id="loginEmail" required placeholder="admin@korvexasolution.com" class="w-full pl-9 pr-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:outline-none focus:border-app-primary transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase tracking-wider mb-1">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3 top-3 text-app-muted"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:outline-none focus:border-app-primary transition">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1">
+          <span></span>
+          <button type="button" onclick="switchAuth('forgot')" class="text-app-primary font-semibold hover:underline">Forgot Password?</button>
+        </div>
+
+        <button type="submit" id="loginBtn" class="w-full py-2.5 bg-app-primary hover:bg-app-primaryHover text-white font-bold rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2">
+          <span>Sign In to Cloud</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <div class="mt-5 text-center text-xs text-app-muted">
+        Don't have a Firebase account? <button onclick="switchAuth('register')" class="text-app-primary font-bold hover:underline">Register New Admin</button>
+      </div>
+    </div>
+
+    <!-- REGISTER CARD -->
+    <div id="registerCard" class="hidden w-full max-w-md bg-app-card border border-app-border p-6 sm:p-8 rounded-2xl shadow-xl">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold tracking-tight text-app-text">Register Admin</h2>
+        <p class="text-xs text-app-muted mt-1">Create user directly in Firebase Authentication</p>
+      </div>
+      <form onsubmit="handleRegister(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Full Name</label>
+          <input type="text" id="regName" required placeholder="e.g. Master Admin" class="w-full px-3.5 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-app-primary focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Email Address</label>
+<input type="email" id="regEmail" required placeholder="admin@korvexasolution.com" class="w-full px-3.5 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-app-primary focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Password (Min 6 chars)</label>
+          <input type="password" id="regPassword" minlength="6" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-app-primary focus:outline-none">
+        </div>
+        <button type="submit" id="regBtn" class="w-full py-2.5 bg-app-primary hover:bg-app-primaryHover text-white font-bold rounded-lg text-sm transition">Register on Cloud</button>
+      </form>
+      <div class="mt-5 text-center text-xs text-app-muted">
+        Already registered? <button onclick="switchAuth('login')" class="text-app-primary font-bold hover:underline">Sign In</button>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD CARD -->
+    <div id="forgotCard" class="hidden w-full max-w-md bg-app-card border border-app-border p-6 sm:p-8 rounded-2xl shadow-xl">
+      <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight text-app-text">Reset Password</h2>
+        <p class="text-xs text-app-muted mt-1">Send Firebase official password reset link</p>
+      </div>
+      <form onsubmit="handleForgot(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Registered Firebase Email</label>
+<input type="email" id="forgotEmail" required placeholder="admin@korvexasolution.com" class="w-full px-3.5 py-2.5 bg-app-bg border border-app-border rounded-lg text-sm text-app-text focus:border-app-primary focus:outline-none">
+        </div>
+        <button type="submit" id="forgotBtn" class="w-full py-2.5 bg-app-primary hover:bg-app-primaryHover text-white font-bold rounded-lg text-sm transition">Send Reset Email</button>
+      </form>
+      <div class="mt-5 text-center text-xs text-app-muted">
+        <button onclick="switchAuth('login')" class="text-app-primary font-bold hover:underline">Back to Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP LAYOUT ================= -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col md:flex-row bg-app-bg relative">
+    
+    <!-- MOBILE TOP BAR -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 bg-app-card border-b border-app-border sticky top-0 z-40 shadow-sm">
+      <div class="flex items-center gap-2.5">
+        <button onclick="openMobileSidebar()" class="p-1.5 rounded-lg border border-app-border hover:bg-app-bg text-app-text">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <span class="font-bold text-sm tracking-tight text-app-text">DevClient <span class="text-app-primary">Cloud</span></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Firebase Live</span>
+        <button onclick="openModal()" class="p-1.5 bg-app-primary text-white rounded-lg shadow">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="mainSidebar" class="bg-app-sidebar border-r border-app-border flex flex-col justify-between shrink-0 shadow-md md:shadow-none transition-all duration-300 ease-in-out md:relative">
+      
+      <!-- DESKTOP TOGGLE ARROW BUTTON -->
+      <button onclick="toggleSidebar()" id="sidebarToggleBtn" title="Toggle Navigation Bar" class="hidden md:flex absolute -right-3.5 top-6 w-7 h-7 rounded-full bg-app-card border border-app-border text-app-text items-center justify-center hover:bg-app-primary hover:text-white shadow-md transition z-40">
+        <i data-lucide="chevron-left" id="sidebarToggleIcon" class="w-4 h-4"></i>
+      </button>
+
+      <div>
+        <!-- Logo Area -->
+        <div class="sidebar-header-box h-16 flex items-center justify-between px-5 border-b border-app-border overflow-hidden">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-app-primary flex items-center justify-center text-white font-bold shadow-md shrink-0">
+              D
+            </div>
+            <div class="sidebar-text">
+              <h1 class="font-bold text-sm text-app-text leading-tight whitespace-nowrap">DevClient <span class="text-app-primary">Suite</span></h1>
+              <p class="text-[10px] text-emerald-600 font-mono tracking-tight whitespace-nowrap">● Firebase Firestore</p>
+            </div>
+          </div>
+          <button onclick="closeMobileSidebar()" class="md:hidden text-app-muted hover:text-app-text p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="p-3 space-y-1.5 text-sm" id="mainNav">
+          <button onclick="navigate('dashboard')" id="nav-dashboard" title="Dashboard" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Dashboard</span>
+          </button>
+          
+          <button onclick="navigate('projects')" id="nav-projects" title="Softwares & Projects" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Softwares & Projects</span>
+          </button>
+
+          <button onclick="navigate('vault')" id="nav-vault" title="Super Master Vault" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="key" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Super Master Vault</span>
+          </button>
+
+          <button onclick="navigate('cloud')" id="nav-cloud" title="Cloud & Renewals" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="cloud" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Cloud & Renewals</span>
+          </button>
+
+          <button onclick="navigate('expenses')" id="nav-expenses" title="Office Expenses" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Office Expenses</span>
+          </button>
+
+          <button onclick="navigate('settings')" id="nav-settings" title="Settings & Appearance" class="nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium">
+            <i data-lucide="settings" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-text truncate">Settings & Themes</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bottom Profile Area -->
+      <div class="p-3 border-t border-app-border bg-app-card/40">
+        <div class="sidebar-profile-details flex items-center gap-2.5 mb-3 px-1">
+          <div class="w-8 h-8 rounded-full bg-app-primaryLight text-app-primary border border-app-border flex items-center justify-center font-bold text-xs shrink-0" id="userAvatar">A</div>
+          <div class="truncate">
+            <p class="text-xs font-bold text-app-text truncate" id="userNameLabel">Admin</p>
+            <p class="text-[10px] text-app-muted truncate" id="userEmailLabel">...</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 sidebar-profile-details">
+          <button onclick="exportData()" title="Download Backup" class="py-1.5 px-2 bg-app-card hover:bg-app-bg border border-app-border text-app-text text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition shadow-sm">
+            <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i> Backup
+          </button>
+          <button onclick="handleLogout()" class="py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-500 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="log-out" class="w-3.5 h-3.5 shrink-0"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKING AREA -->
+    <main class="flex-1 overflow-y-auto max-h-screen p-3.5 sm:p-6 md:p-8 bg-app-bg">
+      
+      <!-- TOP ACTION BAR -->
+      <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-5 border-b border-app-border">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-bold text-app-text tracking-tight" id="moduleTitle">Dashboard</h2>
+            <span class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Online</span>
+          </div>
+          <p class="text-xs text-app-muted mt-0.5" id="moduleDesc">Live synchronized summary from Cloud Firestore</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
+          <button onclick="downloadProjectsReportPDF()" id="btnDownloadProjectsPDF" class="hidden px-3 py-2 bg-app-card hover:bg-app-bg border border-app-border text-app-text rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <i data-lucide="file-text" class="w-4 h-4 text-app-primary"></i>
+            <span>Projects PDF</span>
+          </button>
+
+          <button onclick="downloadExpensesReportPDF()" id="btnDownloadExpensePDF" class="hidden px-3 py-2 bg-app-card hover:bg-app-bg border border-app-border text-app-text rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <i data-lucide="file-text" class="w-4 h-4 text-rose-500"></i>
+            <span>Expenses PDF</span>
+          </button>
+
+          <button onclick="downloadCloudReportPDF()" id="btnDownloadCloudPDF" class="hidden px-3 py-2 bg-app-card hover:bg-app-bg border border-app-border text-app-text rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>Cloud PDF</span>
+          </button>
+
+          <button onclick="openExpenseModal()" id="btnTopAddExpense" class="hidden px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Add Expense</span>
+          </button>
+
+          <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-md transition active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add New Software</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 1. DASHBOARD VIEW -->
+      <section id="view-dashboard" class="module-view mt-5 space-y-5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div class="p-3.5 sm:p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-app-muted">Delivered</span>
+              <span class="p-1.5 bg-blue-500/10 text-blue-500 rounded-lg"><i data-lucide="box" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <p class="text-lg sm:text-xl font-extrabold mt-1.5 text-app-text" id="statTotalSoftwares">0</p>
+            <span class="text-[9px] sm:text-[10px] text-app-muted">Cloud Records</span>
+          </div>
+
+          <div class="p-3.5 sm:p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-app-muted">Received</span>
+              <span class="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <p class="text-lg sm:text-xl font-extrabold mt-1.5 text-emerald-500" id="statTotalPaid">Rs. 0</p>
+            <span class="text-[9px] sm:text-[10px] text-app-muted">Cleared Receipts</span>
+          </div>
+
+          <div class="p-3.5 sm:p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-app-muted">Pending</span>
+              <span class="p-1.5 bg-rose-500/10 text-rose-500 rounded-lg"><i data-lucide="clock" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <p class="text-lg sm:text-xl font-extrabold mt-1.5 text-rose-500" id="statTotalPending">Rs. 0</p>
+            <span class="text-[9px] sm:text-[10px] text-app-muted">Outstanding</span>
+          </div>
+
+          <div class="p-3.5 sm:p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-app-muted">Expenses</span>
+              <span class="p-1.5 bg-amber-500/10 text-amber-500 rounded-lg"><i data-lucide="receipt" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <p class="text-lg sm:text-xl font-extrabold mt-1.5 text-amber-500" id="statTotalExpense">Rs. 0</p>
+            <span class="text-[9px] sm:text-[10px] text-app-muted">Office Overheads</span>
+          </div>
+
+          <div class="p-3.5 sm:p-4 bg-app-card border border-app-border rounded-xl shadow-sm col-span-2 sm:col-span-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-app-muted">Cloud Hosting</span>
+              <span class="p-1.5 bg-app-primaryLight text-app-primary rounded-lg"><i data-lucide="cloud-lightning" class="w-3.5 h-3.5"></i></span>
+            </div>
+            <p class="text-lg sm:text-xl font-extrabold mt-1.5 text-app-primary" id="statCloudFee">Rs. 0</p>
+            <span class="text-[9px] sm:text-[10px] text-app-muted">Annual Total</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div class="bg-app-card border border-app-border rounded-xl p-4 sm:p-5 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-app-border">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-app-text flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                Cloud Renewals (&lt; 30 Days)
+              </h3>
+            </div>
+            <div id="cloudAlertsList" class="space-y-2.5 flex-1 overflow-y-auto max-h-60 sm:max-h-72 pr-1"></div>
+          </div>
+
+          <div class="lg:col-span-2 bg-app-card border border-app-border rounded-xl p-4 sm:p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-app-border">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-app-text flex items-center gap-2">
+                <i data-lucide="list" class="w-4 h-4 text-app-primary"></i>
+                Recent Software Deployments
+              </h3>
+              <button onclick="navigate('projects')" class="text-xs font-semibold text-app-primary hover:underline">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs min-w-[500px]">
+                <thead>
+                  <tr class="text-app-muted border-b border-app-border uppercase font-semibold">
+                    <th class="py-2">Software &amp; Client</th>
+                    <th class="py-2">Payment Details</th>
+                    <th class="py-2">Contract</th>
+                    <th class="py-2">Paid</th>
+                    <th class="py-2">Pending</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardRecentTable" class="divide-y divide-app-border text-app-text"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. PROJECTS LIST VIEW -->
+      <section id="view-projects" class="module-view hidden mt-5 space-y-4">
+        <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+          <div class="relative w-full sm:w-80">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-app-muted"></i>
+            <input type="text" id="projectSearchInput" oninput="renderProjectsTable()" placeholder="Search software, client, phone..." class="w-full pl-9 pr-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:outline-none focus:border-app-primary shadow-sm">
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="paymentFilter" onchange="renderProjectsTable()" class="w-full sm:w-auto bg-app-card border border-app-border text-xs px-3 py-2 rounded-lg text-app-text focus:outline-none shadow-sm">
+              <option value="ALL">All Payment Status</option>
+              <option value="PENDING">Pending Balance Only</option>
+              <option value="PAID">Fully Paid Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hidden md:block bg-app-card border border-app-border rounded-xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-app-bg uppercase font-bold text-app-muted border-b border-app-border">
+                <tr>
+                  <th class="p-3.5">Software / Client Details</th>
+                  <th class="p-3.5">Payment Account</th>
+                  <th class="p-3.5">Delivery Date</th>
+                  <th class="p-3.5">Contract Value</th>
+                  <th class="p-3.5">Received</th>
+                  <th class="p-3.5">Remaining Balance</th>
+                  <th class="p-3.5">Cloud Hosting</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projectsTableBody" class="divide-y divide-app-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="projectsMobileList" class="md:hidden space-y-3"></div>
+      </section>
+
+      <!-- 3. SUPER MASTER VAULT VIEW -->
+      <section id="view-vault" class="module-view hidden mt-5 space-y-4">
+        <div class="p-3.5 bg-app-primaryLight border border-app-border rounded-xl flex items-center gap-3 text-xs text-app-text">
+          <i data-lucide="shield-check" class="w-5 h-5 text-app-primary shrink-0"></i>
+          <span>Master Vault: Live synchronized credentials securely saved directly in Cloud Firestore.</span>
+        </div>
+        <div id="vaultGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- 4. CLOUD & RENEWALS TRACKER VIEW -->
+      <section id="view-cloud" class="module-view hidden mt-5 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <p class="text-xs font-semibold uppercase text-app-muted">Total Cloud Contracts</p>
+            <p class="text-2xl font-bold text-app-text mt-1" id="cloudTotalCount">0</p>
+          </div>
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <p class="text-xs font-semibold uppercase text-app-muted">Expiring in 30 Days</p>
+            <p class="text-2xl font-bold text-amber-500 mt-1" id="cloudExpiringCount">0</p>
+          </div>
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <p class="text-xs font-semibold uppercase text-app-muted">Expired Contracts</p>
+            <p class="text-2xl font-bold text-rose-500 mt-1" id="cloudExpiredCount">0</p>
+          </div>
+        </div>
+
+        <div class="bg-app-card border border-app-border rounded-xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs min-w-[650px]">
+              <thead class="bg-app-bg uppercase font-bold text-app-muted border-b border-app-border">
+                <tr>
+                  <th class="p-3.5">Software &amp; Client</th>
+                  <th class="p-3.5">Hosting Fee</th>
+                  <th class="p-3.5">Renewal / Expiry Date</th>
+                  <th class="p-3.5">Remaining Period</th>
+                  <th class="p-3.5">Status</th>
+                  <th class="p-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="cloudTableBody" class="divide-y divide-app-border"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. OFFICE EXPENSE MODULE VIEW -->
+      <section id="view-expenses" class="module-view hidden mt-5 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-app-muted">Total Office Expenses</span>
+            <p class="text-2xl font-bold text-rose-500 mt-1" id="expenseTotalAmount">Rs. 0</p>
+            <span class="text-[10px] text-app-muted">Firestore Overheads</span>
+          </div>
+
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-app-muted">This Month's Spending</span>
+            <p class="text-2xl font-bold text-amber-500 mt-1" id="expenseMonthAmount">Rs. 0</p>
+            <span class="text-[10px] text-app-muted">Current Month Total</span>
+          </div>
+
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm">
+            <span class="text-xs font-bold uppercase tracking-wider text-app-muted">Top Spending Category</span>
+            <p class="text-base sm:text-lg font-bold text-app-text mt-1 truncate" id="expenseTopCategory">None</p>
+            <span class="text-[10px] text-app-muted">Highest Category</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-app-muted"></i>
+              <input type="text" id="expenseSearchInput" oninput="renderExpensesTable()" placeholder="Search description, payee..." class="w-full pl-9 pr-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:outline-none focus:border-app-primary shadow-sm">
+            </div>
+
+            <select id="expenseCategoryFilter" onchange="renderExpensesTable()" class="w-full sm:w-auto bg-app-card border border-app-border text-xs px-3 py-2 rounded-lg text-app-text focus:outline-none shadow-sm">
+              <option value="ALL">All Categories</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 justify-end">
+            <button onclick="openManageCategoriesModal()" class="w-full sm:w-auto px-3 py-2 bg-app-card hover:bg-app-bg border border-app-border text-app-text rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="folder-cog" class="w-3.5 h-3.5"></i>
+              <span>Categories</span>
+            </button>
+            <button onclick="openExpenseModal()" class="w-full sm:w-auto px-4 py-2 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Add Expense</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="hidden md:block bg-app-card border border-app-border rounded-xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-app-bg uppercase font-bold text-app-muted border-b border-app-border">
+                <tr>
+                  <th class="p-3.5">Date</th>
+                  <th class="p-3.5">Category</th>
+                  <th class="p-3.5">Description / Vendor</th>
+                  <th class="p-3.5">Paid Via</th>
+                  <th class="p-3.5">Amount</th>
+                  <th class="p-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody" class="divide-y divide-app-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="expensesMobileList" class="md:hidden space-y-2.5"></div>
+      </section>
+
+      <!-- 6. SETTINGS & THEMES -->
+      <section id="view-settings" class="module-view hidden mt-5 space-y-6">
+        <div class="bg-app-card border border-app-border rounded-xl p-5 sm:p-6 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-app-text flex items-center gap-2">
+            <i data-lucide="palette" class="w-5 h-5 text-app-primary"></i>
+            Portal Themes &amp; Appearance
+          </h3>
+
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div onclick="setTheme('emerald')" class="cursor-pointer border-2 rounded-xl p-3 bg-white text-slate-800 hover:shadow-md transition" id="theme-card-emerald">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-900">Emerald Pro</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              </div>
+              <p class="text-[10px] text-slate-500">Light Modern Green</p>
+            </div>
+
+            <div onclick="setTheme('dark')" class="cursor-pointer border-2 rounded-xl p-3 bg-slate-900 text-white hover:shadow-md transition" id="theme-card-dark">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-100">Midnight Dark</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              </div>
+              <p class="text-[10px] text-slate-400">Cyber Developer Mode</p>
+            </div>
+
+            <div onclick="setTheme('navy')" class="cursor-pointer border-2 rounded-xl p-3 bg-white text-slate-800 hover:shadow-md transition" id="theme-card-navy">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-900">Enterprise Navy</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              </div>
+              <p class="text-[10px] text-slate-500">Corporate Royal Blue</p>
+            </div>
+
+            <div onclick="setTheme('gold')" class="cursor-pointer border-2 rounded-xl p-3 bg-zinc-900 text-white hover:shadow-md transition" id="theme-card-gold">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-zinc-100">Obsidian Gold</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              </div>
+              <p class="text-[10px] text-zinc-400">Executive Charcoal Warm</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-app-card border border-app-border rounded-xl p-5 sm:p-6 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-app-text flex items-center gap-2">
+            <i data-lucide="database" class="w-5 h-5 text-app-primary"></i>
+            Cloud Data Backup &amp; Offline Copy
+          </h3>
+          <div class="p-3.5 border border-app-border rounded-xl bg-app-bg space-y-2">
+            <p class="text-xs font-bold text-app-text">Download Firestore Database Snapshot</p>
+            <button onclick="exportData()" class="mt-1 px-4 py-2 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Backup (.JSON)
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= ADD / EDIT SOFTWARE MODAL ================= -->
+  <div id="projectModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 hidden overflow-y-auto">
+    <div class="bg-app-card border border-app-border rounded-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-app-border pb-3 mb-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-app-text" id="modalTitle">Add New Software</h3>
+          <p class="text-[11px] text-app-muted">Directly synced to Cloud Firestore</p>
+        </div>
+        <button onclick="closeModal()" class="text-app-muted hover:text-app-text p-1.5 rounded-lg hover:bg-app-bg transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="projectForm" onsubmit="handleSaveProject(event)" class="space-y-3.5">
+        <input type="hidden" id="editProjectId" value="">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Software / Project Name *</label>
+            <input type="text" id="softwareName" required placeholder="e.g. POS Billing App, Hospital ERP" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Client Name / Business *</label>
+            <input type="text" id="clientName" required placeholder="e.g. Tariq Mehmood / ABC Pharma" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Client Mobile / Phone *</label>
+            <div class="relative">
+              <i data-lucide="phone" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-app-muted"></i>
+              <input type="text" id="clientPhone" required placeholder="e.g. +92 300 1234567" class="w-full pl-8 pr-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Client Address / City *</label>
+            <div class="relative">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-app-muted"></i>
+              <input type="text" id="clientAddress" required placeholder="e.g. Suite 4B, Blue Area, Islamabad" class="w-full pl-8 pr-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Delivery Date</label>
+            <input type="date" id="deliveryDate" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Live URL / Domain</label>
+            <input type="url" id="softwareUrl" placeholder="https://app.clientportal.com" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Modules Breakdown -->
+        <div class="p-3.5 bg-app-bg rounded-xl border border-app-border space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-bold text-app-primary uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-4 h-4"></i> Software Modules &amp; Pricing
+            </p>
+            <button type="button" onclick="addModuleRow()" class="px-2.5 py-1 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Module</span>
+            </button>
+          </div>
+          <div id="modulesContainer" class="space-y-2"></div>
+        </div>
+
+        <!-- Financials -->
+        <div class="p-3.5 bg-app-bg rounded-xl border border-app-border space-y-3">
+          <p class="text-xs font-bold text-app-primary uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i> Financials &amp; Payment Method
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Total Contract Price *</label>
+              <input type="number" id="totalPrice" required oninput="calcPending()" placeholder="50000" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text font-bold focus:border-app-primary focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Amount Received *</label>
+              <input type="number" id="paidAmount" required oninput="calcPending()" placeholder="0" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Remaining Balance</label>
+              <input type="number" id="pendingAmount" readonly placeholder="Auto Calculated" class="w-full px-3 py-2 bg-rose-500/10 border border-rose-500/20 text-rose-500 font-bold rounded-lg text-xs focus:outline-none cursor-not-allowed">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-app-border">
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Payment Mode *</label>
+              <select id="paymentMethod" onchange="toggleAccountDetailsField()" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+                <option value="Cash">Cash in Hand</option>
+                <option value="Online Bank Transfer">Online Bank Transfer</option>
+                <option value="EasyPaisa / JazzCash">EasyPaisa / JazzCash</option>
+                <option value="Raast Transfer">Raast Transfer</option>
+                <option value="Other Gateway">Other Gateway</option>
+              </select>
+            </div>
+
+            <div id="accountDetailsContainer" class="hidden">
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Account / Tx Details *</label>
+              <input type="text" id="accountDetails" placeholder="e.g. Bank Title, Account Number" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-app-border">
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Cloud Annual Fee</label>
+              <input type="number" id="cloudFee" placeholder="10000" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Cloud Expiry Date</label>
+              <input type="date" id="cloudExpiryDate" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Credentials -->
+        <div class="p-3.5 bg-app-primaryLight rounded-xl border border-app-border space-y-2.5">
+          <p class="text-xs font-bold text-app-primary uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="key" class="w-3.5 h-3.5"></i> Super Master Login Credentials
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Master Email / Username *</label>
+<input type="text" id="superEmail" required placeholder="admin@korvexasolution.com" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-app-muted uppercase mb-1">Master Password *</label>
+              <input type="text" id="superPassword" required placeholder="MasterRoot@2026" class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Technical Notes</label>
+          <textarea id="projectNotes" rows="2" placeholder="VPS IP, database credentials, server details..." class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-app-border">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-app-bg hover:bg-app-border text-app-text rounded-lg text-xs font-semibold">Cancel</button>
+          <button type="submit" id="saveProjectBtn" class="px-4 py-2 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5">
+            <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+            <span>Save to Firebase</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= PAY REMAINING MODAL ================= -->
+  <div id="payModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-app-card border border-app-border rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-app-border pb-3 mb-3">
+        <div>
+          <h3 class="text-base font-bold text-app-text">Pay Remaining Balance</h3>
+          <p class="text-xs text-app-muted" id="payModalSubtitle">Update Firestore Record</p>
+        </div>
+        <button onclick="closePayModal()" class="text-app-muted hover:text-app-text p-1 rounded-lg">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="payForm" onsubmit="handleRemainingPayment(event)" class="space-y-3.5">
+        <input type="hidden" id="payProjectId" value="">
+
+        <div class="p-3 bg-app-bg rounded-xl border border-app-border space-y-1.5">
+          <div class="flex justify-between text-xs">
+            <span class="text-app-muted">Total Contract:</span>
+            <span class="font-bold text-app-text" id="payModalTotalContract">Rs. 0</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-app-muted">Already Paid:</span>
+            <span class="font-bold text-emerald-500" id="payModalAlreadyPaid">Rs. 0</span>
+          </div>
+          <div class="flex justify-between text-xs pt-1 border-t border-app-border">
+            <span class="text-rose-500 font-bold">Remaining Due:</span>
+            <span class="font-bold text-rose-500" id="payModalRemainingDue">Rs. 0</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Paying Amount Now (Rs.) *</label>
+          <input type="number" id="payAmountInput" required min="1" placeholder="Enter amount" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text font-bold focus:border-app-primary focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Payment Method *</label>
+          <select id="payMethodSelect" onchange="togglePayModalAccountDetails()" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            <option value="Cash">Cash in Hand</option>
+            <option value="Online Bank Transfer">Online Bank Transfer</option>
+            <option value="EasyPaisa / JazzCash">EasyPaisa / JazzCash</option>
+            <option value="Raast Transfer">Raast Transfer</option>
+          </select>
+        </div>
+
+        <div id="payModalAccountDetailsContainer" class="hidden">
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Account / Transaction Details</label>
+          <input type="text" id="payModalAccountDetails" placeholder="e.g. Meezan Bank, JazzCash Tx ID" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-app-border">
+          <button type="button" onclick="closePayModal()" class="px-4 py-2 bg-app-bg hover:bg-app-border text-app-text rounded-lg text-xs font-semibold">Cancel</button>
+          <button type="submit" id="paySubmitBtn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-md">Confirm Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= ADD / EDIT EXPENSE MODAL ================= -->
+  <div id="expenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-app-card border border-app-border rounded-2xl w-full max-w-lg p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-app-border pb-3 mb-3">
+        <div>
+          <h3 class="text-base font-bold text-app-text" id="expenseModalTitle">Add Office Expense</h3>
+          <p class="text-xs text-app-muted">Record spending to Firebase</p>
+        </div>
+        <button onclick="closeExpenseModal()" class="text-app-muted hover:text-app-text p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="expenseForm" onsubmit="handleSaveExpense(event)" class="space-y-3.5">
+        <input type="hidden" id="editExpenseId" value="">
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Expense Category *</label>
+          <div class="flex gap-2">
+            <select id="expenseCategorySelect" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none"></select>
+            <button type="button" onclick="openManageCategoriesModal()" title="Add Category" class="px-3 bg-app-primaryLight text-app-primary border border-app-border rounded-lg hover:bg-app-primary hover:text-white transition">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Amount Spent (Rs.) *</label>
+            <input type="number" id="expenseAmount" required min="1" placeholder="e.g. 1500" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-app-text uppercase mb-1">Expense Date *</label>
+            <input type="date" id="expenseDate" required class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Payment Method</label>
+          <select id="expensePaymentMethod" class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+            <option value="Cash / Petty Cash">Cash / Petty Cash</option>
+            <option value="Company Bank Account">Company Bank Account</option>
+            <option value="Online / Mobile Wallet">Online / Mobile Wallet</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-app-text uppercase mb-1">Description / Notes *</label>
+          <textarea id="expenseDescription" required rows="2" placeholder="e.g. Office Lunch bill, Tea & Refreshment..." class="w-full px-3 py-2 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-app-border">
+          <button type="button" onclick="closeExpenseModal()" class="px-4 py-2 bg-app-bg hover:bg-app-border text-app-text rounded-lg text-xs font-semibold">Cancel</button>
+          <button type="submit" id="saveExpenseBtn" class="px-4 py-2 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold shadow-md">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MANAGE CATEGORIES MODAL ================= -->
+  <div id="categoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-app-card border border-app-border rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-app-border pb-2.5">
+        <h3 class="text-sm font-bold text-app-text">Expense Categories</h3>
+        <button onclick="closeCategoryModal()" class="text-app-muted hover:text-app-text p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <input type="text" id="newCategoryInput" placeholder="e.g. Daily Khana Pina, Tea & Refreshment" class="w-full px-3 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none">
+        <button onclick="addNewCategory()" class="px-3 py-1.5 bg-app-primary hover:bg-app-primaryHover text-white rounded-lg text-xs font-bold shrink-0">Add</button>
+      </div>
+
+      <div class="space-y-1.5 max-h-52 overflow-y-auto pr-1" id="categoryListContainer"></div>
+
+      <div class="pt-2 border-t border-app-border flex justify-end">
+        <button onclick="closeCategoryModal()" class="px-3.5 py-1.5 bg-app-bg border border-app-border rounded-lg text-xs font-semibold">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 left-5 sm:left-auto bg-app-card border border-app-border text-app-text text-xs font-medium px-4 py-3 rounded-lg shadow-2xl z-50 transition transform translate-y-16 opacity-0 flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-4 h-4 text-app-primary shrink-0"></i>
+    <span id="toastMsg" class="truncate">Action completed</span>
+  </div>
+
+  <script>
+  
+  const firebaseConfig = {
+  apiKey: "AIzaSyANHypa-_MUkQzyuWkd-yTOggCej0NJTj4",
+  authDomain: "korvexaerp.firebaseapp.com",
+  projectId: "korvexaerp",
+  storageBucket: "korvexaerp.firebasestorage.app",
+  messagingSenderId: "794614122414",
+  appId: "1:794614122414:web:fe67d63eb5a499ea206a3f",
+  measurementId: "G-WVCERJZZ7K"
+};
+
+
+    // Firebase Initialize
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // App State (Zero Local Hardcoded Data)
+    let projects = [];
+    let expenses = [];
+    let categories = ['Khana / Mess / Tea', 'Office Rent', 'Electricity / Bills', 'Internet', 'Salaries', 'Miscellaneous'];
+    let currentAuthUser = null;
+    let activeView = 'dashboard';
+    let currentTheme = 'emerald';
+    let isSidebarCollapsed = false;
+
+    // Listeners Unsubscribe References
+    let unsubProjects = null;
+    let unsubExpenses = null;
+    let unsubCategories = null;
+
+    // ==========================================
+    // 2. LIFECYCLE & AUTH OBSERVER
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      currentTheme = localStorage.getItem('devmaster_theme_key') || 'emerald';
+      applyTheme(currentTheme);
+
+      isSidebarCollapsed = localStorage.getItem('devmaster_sidebar_collapsed') === 'true';
+      if (isSidebarCollapsed) applySidebarCollapsed(true);
+
+      // Listen to Firebase Auth State
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          currentAuthUser = user;
+          document.getElementById('userNameLabel').innerText = user.displayName || user.email.split('@')[0].toUpperCase();
+          document.getElementById('userEmailLabel').innerText = user.email;
+          document.getElementById('userAvatar').innerText = (user.displayName || user.email)[0].toUpperCase();
+          
+          showApp();
+          startRealtimeSync();
+        } else {
+          currentAuthUser = null;
+          stopRealtimeSync();
+          showAuth();
+        }
+        lucide.createIcons();
+      });
+    });
+
+    // Realtime Firestore Sync
+    function startRealtimeSync() {
+      // 1. Listen to Projects
+      unsubProjects = db.collection("projects").orderBy("deliveryDate", "desc").onSnapshot((snapshot) => {
+        projects = [];
+        snapshot.forEach((doc) => {
+          projects.push({ id: doc.id, ...doc.data() });
+        });
+        refreshActiveView();
+      }, (error) => {
+        console.error("Firestore Projects Error:", error);
+      });
+
+      // 2. Listen to Expenses
+      unsubExpenses = db.collection("expenses").orderBy("date", "desc").onSnapshot((snapshot) => {
+        expenses = [];
+        snapshot.forEach((doc) => {
+          expenses.push({ id: doc.id, ...doc.data() });
+        });
+        refreshActiveView();
+      }, (error) => {
+        console.error("Firestore Expenses Error:", error);
+      });
+
+      // 3. Listen to Categories
+      unsubCategories = db.collection("settings").doc("categories").onSnapshot((doc) => {
+        if (doc.exists && doc.data().list) {
+          categories = doc.data().list;
+        } else {
+          // Initialize default categories in Firestore if not present
+          db.collection("settings").doc("categories").set({ list: categories });
+        }
+        populateExpenseCategoryDropdowns();
+      });
+    }
+
+    function stopRealtimeSync() {
+      if (unsubProjects) unsubProjects();
+      if (unsubExpenses) unsubExpenses();
+      if (unsubCategories) unsubCategories();
+      projects = [];
+      expenses = [];
+    }
+
+    // ==========================================
+    // 3. AUTHENTICATION HANDLERS (FIREBASE)
+    // ==========================================
+    function switchAuth(type) {
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('registerCard').classList.add('hidden');
+      document.getElementById('forgotCard').classList.add('hidden');
+
+      if (type === 'login') document.getElementById('loginCard').classList.remove('hidden');
+      if (type === 'register') document.getElementById('registerCard').classList.remove('hidden');
+      if (type === 'forgot') document.getElementById('forgotCard').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      const btn = document.getElementById('loginBtn');
+
+      try {
+        btn.disabled = true;
+        btn.innerText = "Signing in...";
+        await auth.signInWithEmailAndPassword(email, pass);
+        showToast("Signed in to Firebase successfully!");
+      } catch (err) {
+        alert("Firebase Login Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Sign In to Cloud</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPassword').value.trim();
+      const btn = document.getElementById('regBtn');
+
+      try {
+        btn.disabled = true;
+        btn.innerText = "Creating account...";
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await cred.user.updateProfile({ displayName: name });
+        showToast("Firebase User registered successfully!");
+      } catch (err) {
+        alert("Registration Failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Register on Cloud";
+      }
+    }
+
+    async function handleForgot(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      const btn = document.getElementById('forgotBtn');
+
+      try {
+        btn.disabled = true;
+        btn.innerText = "Sending...";
+        await auth.sendPasswordResetEmail(email);
+        showToast("Password reset link sent to your email!");
+        setTimeout(() => switchAuth('login'), 2000);
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Send Reset Email";
+      }
+    }
+
+    async function handleLogout() {
+      if (confirm('Are you sure you want to sign out from Firebase?')) {
+        await auth.signOut();
+        showToast('Signed out.');
+      }
+    }
+
+    function showAuth() {
+      document.getElementById('authContainer').classList.remove('hidden');
+      document.getElementById('appContainer').classList.add('hidden');
+    }
+
+    function showApp() {
+      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      navigate('dashboard');
+    }
+
+    // ==========================================
+    // 4. NAVIGATION & VIEW LOGIC
+    // ==========================================
+    function navigate(viewName) {
+      activeView = viewName;
+      closeMobileSidebar();
+
+      document.querySelectorAll('.module-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = "nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navText hover:text-app-navHoverText hover:bg-app-navHoverBg transition text-sm font-medium";
+      });
+
+      const activeNav = document.getElementById(`nav-${viewName}`);
+      if (activeNav) {
+        activeNav.className = "nav-btn group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-app-navActiveText bg-app-navActiveBg font-bold transition text-sm border-r-4 border-app-primary";
+      }
+
+      const activeEl = document.getElementById(`view-${viewName}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      const titleEl = document.getElementById('moduleTitle');
+      const descEl = document.getElementById('moduleDesc');
+      const btnProjectsPDF = document.getElementById('btnDownloadProjectsPDF');
+      const btnExpensePDF = document.getElementById('btnDownloadExpensePDF');
+      const btnCloudPDF = document.getElementById('btnDownloadCloudPDF');
+      const btnAddExpense = document.getElementById('btnTopAddExpense');
+
+      btnProjectsPDF.classList.add('hidden');
+      btnExpensePDF.classList.add('hidden');
+      btnCloudPDF.classList.add('hidden');
+      btnAddExpense.classList.add('hidden');
+
+      if (viewName === 'dashboard') {
+        titleEl.innerText = "Dashboard Overview";
+        descEl.innerText = "Live summary of delivered softwares, cloud collections, and expenses";
+        renderDashboard();
+      } else if (viewName === 'projects') {
+        titleEl.innerText = "Softwares & Contracts";
+        descEl.innerText = "Direct Firestore client registry, billing, and balance trackers";
+        btnProjectsPDF.classList.remove('hidden');
+        renderProjectsTable();
+      } else if (viewName === 'vault') {
+        titleEl.innerText = "Super Master Vault";
+        descEl.innerText = "Secure master access credentials stored in Firestore";
+        renderVault();
+      } else if (viewName === 'cloud') {
+        titleEl.innerText = "Cloud & Server Renewals";
+        descEl.innerText = "Expiration schedules and live countdowns";
+        btnCloudPDF.classList.remove('hidden');
+        renderCloudTracker();
+      } else if (viewName === 'expenses') {
+        titleEl.innerText = "Office Expenses & Overheads";
+        descEl.innerText = "Track office lunch, bills, rent, and generate expense report";
+        btnAddExpense.classList.remove('hidden');
+        btnExpensePDF.classList.remove('hidden');
+        renderExpensesTable();
+      } else if (viewName === 'settings') {
+        titleEl.innerText = "Settings & Appearance";
+        descEl.innerText = "Color themes and Firestore snapshot export";
+        applyTheme(currentTheme);
+      }
+
+      lucide.createIcons();
+    }
+
+    function refreshActiveView() {
+      if (activeView === 'dashboard') renderDashboard();
+      if (activeView === 'projects') renderProjectsTable();
+      if (activeView === 'expenses') renderExpensesTable();
+      if (activeView === 'vault') renderVault();
+      if (activeView === 'cloud') renderCloudTracker();
+    }
+
+    function formatCurrency(amount) {
+      return 'Rs. ' + Number(amount || 0).toLocaleString('en-US');
+    }
+
+    function calcPending() {
+      const total = Number(document.getElementById('totalPrice').value) || 0;
+      const paid = Number(document.getElementById('paidAmount').value) || 0;
+      const pending = Math.max(0, total - paid);
+      document.getElementById('pendingAmount').value = pending;
+    }
+
+    function getDaysRemaining(dateString) {
+      if (!dateString) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(dateString);
+      target.setHours(0, 0, 0, 0);
+      return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+    }
+
+    // ==========================================
+    // 5. DASHBOARD RENDER
+    // ==========================================
+    function renderDashboard() {
+      let totalSoftwares = projects.length;
+      let totalPaid = 0;
+      let totalPending = 0;
+      let totalCloudFee = 0;
+      let totalExpenses = 0;
+
+      projects.forEach(p => {
+        totalPaid += Number(p.paidAmount || 0);
+        totalPending += Number(p.pendingAmount || 0);
+        totalCloudFee += Number(p.cloudFee || 0);
+      });
+
+      expenses.forEach(e => {
+        totalExpenses += Number(e.amount || 0);
+      });
+
+      document.getElementById('statTotalSoftwares').innerText = totalSoftwares;
+      document.getElementById('statTotalPaid').innerText = formatCurrency(totalPaid);
+      document.getElementById('statTotalPending').innerText = formatCurrency(totalPending);
+      document.getElementById('statCloudFee').innerText = formatCurrency(totalCloudFee);
+      document.getElementById('statTotalExpense').innerText = formatCurrency(totalExpenses);
+
+      const alertContainer = document.getElementById('cloudAlertsList');
+      alertContainer.innerHTML = '';
+      const expiringProjects = projects.filter(p => {
+        const days = getDaysRemaining(p.cloudExpiryDate);
+        return days !== null && days <= 30;
+      }).sort((a,b) => getDaysRemaining(a.cloudExpiryDate) - getDaysRemaining(b.cloudExpiryDate));
+
+      if (expiringProjects.length === 0) {
+        alertContainer.innerHTML = `<div class="p-4 bg-app-bg border border-app-border rounded-lg text-center text-xs text-app-muted">No cloud renewal alerts currently.</div>`;
+      } else {
+        expiringProjects.forEach(p => {
+          const days = getDaysRemaining(p.cloudExpiryDate);
+          const isExpired = days < 0;
+          alertContainer.innerHTML += `
+            <div class="p-2.5 ${isExpired ? 'bg-rose-500/10 border-rose-500/30' : 'bg-amber-500/10 border-amber-500/30'} border rounded-lg flex items-center justify-between">
+              <div>
+                <p class="font-bold text-xs text-app-text">${p.softwareName}</p>
+                <p class="text-[10px] text-app-muted">Client: ${p.clientName}</p>
+                <p class="text-[10px] font-bold ${isExpired ? 'text-rose-500' : 'text-amber-500'}">
+                  ${isExpired ? `Expired (${Math.abs(days)}d ago)` : `${days} Days Left`}
+                </p>
+              </div>
+              <button onclick="editProject('${p.id}')" class="px-2 py-1 text-xs bg-app-card border border-app-border rounded text-app-text font-semibold shadow-sm">Renew</button>
+            </div>
+          `;
+        });
+      }
+
+      const recentTbody = document.getElementById('dashboardRecentTable');
+      recentTbody.innerHTML = '';
+      const recentList = [...projects].slice(0, 5);
+      if (recentList.length === 0) {
+        recentTbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-app-muted">No cloud software records found.</td></tr>`;
+      } else {
+        recentList.forEach(p => {
+          recentTbody.innerHTML += `
+            <tr class="hover:bg-app-bg/50">
+              <td class="py-2.5">
+                <p class="font-bold text-app-text">${p.softwareName}</p>
+                <span class="text-[10px] text-app-muted">${p.clientName}</span>
+              </td>
+              <td class="py-2.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.paymentMethod === 'Cash' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-blue-500/10 text-blue-600'}">
+                  ${p.paymentMethod || 'Cash'}
+                </span>
+              </td>
+              <td class="py-2.5 font-semibold">${formatCurrency(p.totalPrice)}</td>
+              <td class="py-2.5 text-emerald-500 font-bold">${formatCurrency(p.paidAmount)}</td>
+              <td class="py-2.5 ${p.pendingAmount > 0 ? 'text-rose-500 font-bold' : 'text-app-muted'}">
+                ${p.pendingAmount > 0 ? formatCurrency(p.pendingAmount) : 'Settled'}
+              </td>
+            </tr>
+          `;
+        });
+      }
+    }
+
+    // ==========================================
+    // 6. PROJECTS TABLE (FIRESTORE CRUD)
+    // ==========================================
+    function renderProjectsTable() {
+      const tbody = document.getElementById('projectsTableBody');
+      const mobileList = document.getElementById('projectsMobileList');
+      const searchQuery = (document.getElementById('projectSearchInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('paymentFilter')?.value || 'ALL';
+
+      tbody.innerHTML = '';
+      mobileList.innerHTML = '';
+
+      let filtered = projects.filter(p => {
+        const matchesSearch = (p.softwareName || '').toLowerCase().includes(searchQuery) ||
+                              (p.clientName || '').toLowerCase().includes(searchQuery) ||
+                              (p.clientPhone || '').toLowerCase().includes(searchQuery) ||
+                              (p.clientAddress || '').toLowerCase().includes(searchQuery);
+        let matchesFilter = true;
+        if (filter === 'PENDING') matchesFilter = Number(p.pendingAmount) > 0;
+        if (filter === 'PAID') matchesFilter = Number(p.pendingAmount) <= 0;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-app-muted text-xs">No projects in Firestore. Click "Add New Software" to create.</td></tr>`;
+        mobileList.innerHTML = `<div class="p-6 text-center text-xs text-app-muted bg-app-card border border-app-border rounded-xl">No projects in Firestore. Click "Add New Software" to create.</div>`;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const isCash = !p.paymentMethod || p.paymentMethod === 'Cash';
+        const hasPending = Number(p.pendingAmount) > 0;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-app-bg/50 border-b border-app-border">
+            <td class="p-3.5">
+              <div class="font-bold text-app-text text-xs">${p.softwareName}</div>
+              <div class="text-[11px] font-semibold text-app-primary flex items-center gap-1 mt-0.5">
+                <span>${p.clientName}</span>
+                ${p.softwareUrl ? `<a href="${p.softwareUrl}" target="_blank" class="hover:underline inline-flex items-center"><i data-lucide="external-link" class="w-3 h-3 ml-1"></i></a>` : ''}
+              </div>
+              <div class="text-[10px] text-app-muted flex items-center gap-2 mt-0.5">
+                <span><i data-lucide="phone" class="w-3 h-3 inline mr-0.5"></i>${p.clientPhone || 'N/A'}</span>
+                <span>•</span>
+                <span class="truncate max-w-[150px]"><i data-lucide="map-pin" class="w-3 h-3 inline mr-0.5"></i>${p.clientAddress || 'N/A'}</span>
+              </div>
+            </td>
+            <td class="p-3.5">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${isCash ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/20'}">
+                <i data-lucide="${isCash ? 'banknote' : 'credit-card'}" class="w-3 h-3"></i>
+                ${p.paymentMethod || 'Cash'}
+              </span>
+              ${!isCash && p.accountDetails ? `<p class="text-[10px] text-app-muted mt-1 font-mono">${p.accountDetails}</p>` : ''}
+            </td>
+            <td class="p-3.5 text-app-muted whitespace-nowrap">${p.deliveryDate || 'N/A'}</td>
+            <td class="p-3.5 font-semibold text-app-text whitespace-nowrap">${formatCurrency(p.totalPrice)}</td>
+            <td class="p-3.5 text-emerald-500 font-bold whitespace-nowrap">${formatCurrency(p.paidAmount)}</td>
+            <td class="p-3.5 whitespace-nowrap">
+              ${hasPending 
+                ? `
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-500 font-bold text-[11px]">${formatCurrency(p.pendingAmount)}</span>
+                    <button onclick="openPayModal('${p.id}')" title="Pay Remaining" class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold shadow-sm transition">
+                      Pay
+                    </button>
+                  </div>
+                `
+                : `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/20 text-[11px]">Fully Paid</span>`
+              }
+            </td>
+            <td class="p-3.5 text-app-primary font-medium whitespace-nowrap">${formatCurrency(p.cloudFee)}</td>
+            <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+              <button onclick="generateProjectPDF('${p.id}')" title="Download Invoice" class="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 rounded transition inline-flex">
+                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="editProject('${p.id}')" title="Edit" class="p-1.5 bg-app-bg hover:text-app-primary text-app-muted rounded transition inline-flex">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteProject('${p.id}')" title="Delete" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded transition inline-flex">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+
+        mobileList.innerHTML += `
+          <div class="p-4 bg-app-card border border-app-border rounded-xl shadow-sm space-y-2.5">
+            <div class="flex items-start justify-between">
+              <div>
+                <h4 class="font-bold text-sm text-app-text">${p.softwareName}</h4>
+                <p class="text-xs font-semibold text-app-primary">${p.clientName}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCash ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-600'}">
+                ${p.paymentMethod || 'Cash'}
+              </span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 p-2 bg-app-bg rounded-lg text-center text-xs">
+              <div>
+                <span class="text-[10px] text-app-muted block">Contract</span>
+                <span class="font-bold text-app-text">${formatCurrency(p.totalPrice)}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-app-muted block">Received</span>
+                <span class="font-bold text-emerald-500">${formatCurrency(p.paidAmount)}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-app-muted block">Pending</span>
+                <span class="font-bold ${hasPending ? 'text-rose-500' : 'text-emerald-500'}">
+                  ${hasPending ? formatCurrency(p.pendingAmount) : 'Settled'}
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-app-muted">Cloud: <strong>${formatCurrency(p.cloudFee)}</strong></span>
+              <div class="flex items-center gap-1.5">
+                ${hasPending ? `
+                  <button onclick="openPayModal('${p.id}')" class="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs font-bold">
+                    Pay
+                  </button>
+                ` : ''}
+                <button onclick="generateProjectPDF('${p.id}')" class="p-1.5 bg-blue-500/10 text-blue-600 rounded">
+                  <i data-lucide="file-down" class="w-4 h-4"></i>
+                </button>
+                <button onclick="editProject('${p.id}')" class="p-1.5 bg-app-bg text-app-muted rounded">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteProject('${p.id}')" class="p-1.5 bg-rose-500/10 text-rose-500 rounded">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function addModuleRow(name = '', price = '') {
+      const container = document.getElementById('modulesContainer');
+      const rowId = 'mod_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+      const rowHtml = `
+        <div id="${rowId}" class="module-row flex items-center gap-2">
+          <input type="text" placeholder="e.g. Account Ledger / Inventory" value="${name}" class="module-name-input flex-1 px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text focus:border-app-primary focus:outline-none" required>
+          <div class="relative w-32 sm:w-40 shrink-0">
+            <span class="absolute left-2.5 top-2 text-[10px] text-app-muted font-bold">Rs.</span>
+            <input type="number" placeholder="Price" value="${price}" oninput="calcModulesTotal()" class="module-price-input w-full pl-8 pr-2.5 py-2 bg-app-card border border-app-border rounded-lg text-xs text-app-text font-semibold focus:border-app-primary focus:outline-none" required>
+          </div>
+          <button type="button" onclick="removeModuleRow('${rowId}')" title="Remove" class="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition shrink-0">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', rowHtml);
+      lucide.createIcons();
+      calcModulesTotal();
+    }
+
+    function removeModuleRow(rowId) {
+      const row = document.getElementById(rowId);
+      if (row) {
+        row.remove();
+        calcModulesTotal();
+      }
+    }
+
+    function calcModulesTotal() {
+      const priceInputs = document.querySelectorAll('.module-price-input');
+      let sum = 0;
+      priceInputs.forEach(input => {
+        sum += Number(input.value) || 0;
+      });
+      if (priceInputs.length > 0 && sum > 0) {
+        document.getElementById('totalPrice').value = sum;
+      }
+      calcPending();
+    }
+
+    function openModal() {
+      document.getElementById('projectForm').reset();
+      document.getElementById('editProjectId').value = '';
+      document.getElementById('modalTitle').innerText = 'Add New Software to Firebase';
+      document.getElementById('paymentMethod').value = 'Cash';
+      toggleAccountDetailsField();
+
+      document.getElementById('modulesContainer').innerHTML = '';
+      addModuleRow();
+
+      document.getElementById('projectModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('projectModal').classList.add('hidden');
+    }
+
+    function editProject(id) {
+      const p = projects.find(item => item.id === id);
+      if (!p) return;
+
+      document.getElementById('editProjectId').value = p.id;
+      document.getElementById('softwareName').value = p.softwareName || '';
+      document.getElementById('clientName').value = p.clientName || '';
+      document.getElementById('clientPhone').value = p.clientPhone || '';
+      document.getElementById('clientAddress').value = p.clientAddress || '';
+      document.getElementById('deliveryDate').value = p.deliveryDate || '';
+      document.getElementById('softwareUrl').value = p.softwareUrl || '';
+      document.getElementById('totalPrice').value = p.totalPrice || '';
+      document.getElementById('paidAmount').value = p.paidAmount || '';
+      document.getElementById('pendingAmount').value = p.pendingAmount || 0;
+      
+      document.getElementById('paymentMethod').value = p.paymentMethod || 'Cash';
+      document.getElementById('accountDetails').value = p.accountDetails || '';
+      toggleAccountDetailsField();
+
+      const container = document.getElementById('modulesContainer');
+      container.innerHTML = '';
+      if (p.modules && Array.isArray(p.modules) && p.modules.length > 0) {
+        p.modules.forEach(m => addModuleRow(m.name, m.price));
+      } else {
+        addModuleRow(p.softwareName || 'Main Software', p.totalPrice || 0);
+      }
+
+      document.getElementById('cloudFee').value = p.cloudFee || '';
+      document.getElementById('cloudExpiryDate').value = p.cloudExpiryDate || '';
+      document.getElementById('superEmail').value = p.superEmail || '';
+      document.getElementById('superPassword').value = p.superPassword || '';
+      document.getElementById('projectNotes').value = p.notes || '';
+
+      document.getElementById('modalTitle').innerText = 'Update Cloud Software Record';
+      document.getElementById('projectModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    async function handleSaveProject(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveProjectBtn');
+      const editId = document.getElementById('editProjectId').value;
+      const total = Number(document.getElementById('totalPrice').value) || 0;
+      const paid = Number(document.getElementById('paidAmount').value) || 0;
+      const pending = Math.max(0, total - paid);
+
+      const method = document.getElementById('paymentMethod').value;
+      const accountDetails = method === 'Cash' ? 'Cash in Hand' : document.getElementById('accountDetails').value;
+
+      const moduleRows = document.querySelectorAll('.module-row');
+      const modules = [];
+      moduleRows.forEach(row => {
+        const name = row.querySelector('.module-name-input').value.trim();
+        const price = Number(row.querySelector('.module-price-input').value) || 0;
+        if (name) modules.push({ name, price });
+      });
+
+      const projectData = {
+        softwareName: document.getElementById('softwareName').value.trim(),
+        clientName: document.getElementById('clientName').value.trim(),
+        clientPhone: document.getElementById('clientPhone').value.trim(),
+        clientAddress: document.getElementById('clientAddress').value.trim(),
+        deliveryDate: document.getElementById('deliveryDate').value,
+        softwareUrl: document.getElementById('softwareUrl').value.trim(),
+        modules: modules,
+        totalPrice: total,
+        paidAmount: paid,
+        pendingAmount: pending,
+        paymentMethod: method,
+        accountDetails: accountDetails,
+        cloudFee: Number(document.getElementById('cloudFee').value) || 0,
+        cloudExpiryDate: document.getElementById('cloudExpiryDate').value,
+        superEmail: document.getElementById('superEmail').value.trim(),
+        superPassword: document.getElementById('superPassword').value.trim(),
+        notes: document.getElementById('projectNotes').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Syncing...";
+
+        if (editId) {
+          await db.collection("projects").doc(editId).update(projectData);
+          showToast('Project updated on Firestore!');
+        } else {
+          projectData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          const docRef = await db.collection("projects").add(projectData);
+          projectData.id = docRef.id;
+          showToast('Project created on Firestore!');
+        }
+        closeModal();
+      } catch (err) {
+        alert("Firestore Save Error: " + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<i data-lucide="cloud-upload" class="w-4 h-4"></i><span>Save to Firebase</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function deleteProject(id) {
+      if (confirm('Permanently delete this project from Firestore?')) {
+        try {
+          await db.collection("projects").doc(id).delete();
+          showToast('Project deleted from Firestore.');
+        } catch (err) {
+          alert("Delete Error: " + err.message);
+        }
+      }
+    }
+
+    // ==========================================
+    // 7. REMAINING BALANCE PAYMENT
+    // ==========================================
+    function openPayModal(projectId) {
+      const p = projects.find(item => item.id === projectId);
+      if (!p) return;
+
+      document.getElementById('payProjectId').value = p.id;
+      document.getElementById('payModalSubtitle').innerText = `${p.softwareName} — ${p.clientName}`;
+      document.getElementById('payModalTotalContract').innerText = formatCurrency(p.totalPrice);
+      document.getElementById('payModalAlreadyPaid').innerText = formatCurrency(p.paidAmount);
+      document.getElementById('payModalRemainingDue').innerText = formatCurrency(p.pendingAmount);
+
+      const payInput = document.getElementById('payAmountInput');
+      payInput.value = p.pendingAmount;
+      payInput.max = p.pendingAmount;
+
+      document.getElementById('payMethodSelect').value = 'Cash';
+      document.getElementById('payModalAccountDetails').value = '';
+      togglePayModalAccountDetails();
+
+      document.getElementById('payModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closePayModal() {
+      document.getElementById('payModal').classList.add('hidden');
+    }
+
+    function togglePayModalAccountDetails() {
+      const method = document.getElementById('payMethodSelect').value;
+      const container = document.getElementById('payModalAccountDetailsContainer');
+      if (method === 'Cash') {
+        container.classList.add('hidden');
+      } else {
+        container.classList.remove('hidden');
+      }
+    }
+
+    async function handleRemainingPayment(e) {
+      e.preventDefault();
+      const id = document.getElementById('payProjectId').value;
+      const p = projects.find(item => item.id === id);
+      if (!p) return;
+
+      const payingNow = Number(document.getElementById('payAmountInput').value) || 0;
+      if (payingNow <= 0 || payingNow > Number(p.pendingAmount)) {
+        alert('Please enter a valid amount!');
+        return;
+      }
+
+      const newPaid = Number(p.paidAmount) + payingNow;
+      const newPending = Math.max(0, Number(p.totalPrice) - newPaid);
+      const method = document.getElementById('payMethodSelect').value;
+      const details = document.getElementById('payModalAccountDetails').value;
+
+      const updateData = {
+        paidAmount: newPaid,
+        pendingAmount: newPending,
+        paymentMethod: method,
+        accountDetails: method === 'Cash' ? 'Cash in Hand' : details,
+        lastPaymentDate: new Date().toISOString().slice(0, 10)
+      };
+
+      const btn = document.getElementById('paySubmitBtn');
+      try {
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+        await db.collection("projects").doc(id).update(updateData);
+        closePayModal();
+        showToast(`Payment of ${formatCurrency(payingNow)} synced!`);
+      } catch (err) {
+        alert("Payment Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Confirm Payment";
+      }
+    }
+
+    // ==========================================
+    // 8. OFFICE EXPENSES (FIRESTORE)
+    // ==========================================
+    function populateExpenseCategoryDropdowns() {
+      const selectModal = document.getElementById('expenseCategorySelect');
+      const selectFilter = document.getElementById('expenseCategoryFilter');
+
+      selectModal.innerHTML = '';
+      selectFilter.innerHTML = '<option value="ALL">All Categories</option>';
+
+      categories.forEach(cat => {
+        selectModal.innerHTML += `<option value="${cat}">${cat}</option>`;
+        selectFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+    }
+
+    function renderExpensesTable() {
+      populateExpenseCategoryDropdowns();
+
+      const tbody = document.getElementById('expensesTableBody');
+      const mobileList = document.getElementById('expensesMobileList');
+      const searchQuery = (document.getElementById('expenseSearchInput')?.value || '').toLowerCase();
+      const filterCategory = document.getElementById('expenseCategoryFilter')?.value || 'ALL';
+
+      tbody.innerHTML = '';
+      mobileList.innerHTML = '';
+
+      let totalAmount = 0;
+      let monthAmount = 0;
+      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      const categoryMap = {};
+
+      expenses.forEach(e => {
+        const amt = Number(e.amount || 0);
+        totalAmount += amt;
+        if (e.date && e.date.startsWith(currentMonthKey)) {
+          monthAmount += amt;
+        }
+        categoryMap[e.category] = (categoryMap[e.category] || 0) + amt;
+      });
+
+      document.getElementById('expenseTotalAmount').innerText = formatCurrency(totalAmount);
+      document.getElementById('expenseMonthAmount').innerText = formatCurrency(monthAmount);
+
+      let topCategory = 'None';
+      let highestAmt = 0;
+      for (const [cat, amt] of Object.entries(categoryMap)) {
+        if (amt > highestAmt) {
+          highestAmt = amt;
+          topCategory = `${cat} (${formatCurrency(amt)})`;
+        }
+      }
+      document.getElementById('expenseTopCategory').innerText = topCategory;
+
+      let filtered = expenses.filter(e => {
+        const matchesSearch = (e.description || '').toLowerCase().includes(searchQuery) ||
+                              (e.category || '').toLowerCase().includes(searchQuery);
+        let matchesCat = true;
+        if (filterCategory !== 'ALL') {
+          matchesCat = e.category === filterCategory;
+        }
+        return matchesSearch && matchesCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-app-muted text-xs">No expense items in Firestore. Click "Add Expense".</td></tr>`;
+        mobileList.innerHTML = `<div class="p-6 text-center text-xs text-app-muted bg-app-card border border-app-border rounded-xl">No expenses recorded yet.</div>`;
+        return;
+      }
+
+      filtered.forEach(exp => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-app-bg/50 border-b border-app-border">
+            <td class="p-3.5 text-app-muted whitespace-nowrap">${exp.date || 'N/A'}</td>
+            <td class="p-3.5">
+              <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                ${exp.category}
+              </span>
+            </td>
+            <td class="p-3.5 text-app-text font-medium">${exp.description}</td>
+            <td class="p-3.5 text-app-muted text-[11px] font-mono">${exp.paymentMethod || 'Cash'}</td>
+            <td class="p-3.5 font-bold text-rose-500 whitespace-nowrap">${formatCurrency(exp.amount)}</td>
+            <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+              <button onclick="editExpense('${exp.id}')" title="Edit" class="p-1.5 bg-app-bg hover:text-app-primary text-app-muted rounded transition inline-flex">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteExpense('${exp.id}')" title="Delete" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded transition inline-flex">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+
+        mobileList.innerHTML += `
+          <div class="p-3.5 bg-app-card border border-app-border rounded-xl shadow-sm flex items-center justify-between">
+            <div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600">
+                ${exp.category}
+              </span>
+              <h5 class="text-xs font-bold text-app-text mt-1">${exp.description}</h5>
+              <p class="text-[10px] text-app-muted mt-0.5">${exp.date} • ${exp.paymentMethod}</p>
+            </div>
+            <div class="text-right">
+              <span class="font-bold text-rose-500 text-sm block">${formatCurrency(exp.amount)}</span>
+              <div class="flex items-center gap-1 mt-1 justify-end">
+                <button onclick="editExpense('${exp.id}')" class="p-1 text-app-muted hover:text-app-primary">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="deleteExpense('${exp.id}')" class="p-1 text-rose-500">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function openExpenseModal() {
+      document.getElementById('expenseForm').reset();
+      document.getElementById('editExpenseId').value = '';
+      document.getElementById('expenseDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('expenseModalTitle').innerText = 'Add Office Expense';
+      populateExpenseCategoryDropdowns();
+      document.getElementById('expenseModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeExpenseModal() {
+      document.getElementById('expenseModal').classList.add('hidden');
+    }
+
+    function editExpense(id) {
+      const exp = expenses.find(e => e.id === id);
+      if (!exp) return;
+
+      populateExpenseCategoryDropdowns();
+      document.getElementById('editExpenseId').value = exp.id;
+      document.getElementById('expenseCategorySelect').value = exp.category;
+      document.getElementById('expenseAmount').value = exp.amount;
+      document.getElementById('expenseDate').value = exp.date;
+      document.getElementById('expensePaymentMethod').value = exp.paymentMethod || 'Cash / Petty Cash';
+      document.getElementById('expenseDescription').value = exp.description;
+
+      document.getElementById('expenseModalTitle').innerText = 'Update Office Expense';
+      document.getElementById('expenseModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    async function handleSaveExpense(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editExpenseId').value;
+      const expenseData = {
+        category: document.getElementById('expenseCategorySelect').value,
+        amount: Number(document.getElementById('expenseAmount').value) || 0,
+        date: document.getElementById('expenseDate').value,
+        paymentMethod: document.getElementById('expensePaymentMethod').value,
+        description: document.getElementById('expenseDescription').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      const btn = document.getElementById('saveExpenseBtn');
+      try {
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+
+        if (editId) {
+          await db.collection("expenses").doc(editId).update(expenseData);
+          showToast('Expense updated on Firestore!');
+        } else {
+          expenseData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection("expenses").add(expenseData);
+          showToast('Expense saved to Firestore!');
+        }
+        closeExpenseModal();
+      } catch (err) {
+        alert("Expense Save Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Save Expense";
+      }
+    }
+
+    async function deleteExpense(id) {
+      if (confirm('Delete this expense permanently?')) {
+        try {
+          await db.collection("expenses").doc(id).delete();
+          showToast('Expense removed from Firestore.');
+        } catch (err) {
+          alert("Error deleting expense: " + err.message);
+        }
+      }
+    }
+
+    function openManageCategoriesModal() {
+      renderCategoryList();
+      document.getElementById('categoryModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.add('hidden');
+      populateExpenseCategoryDropdowns();
+    }
+
+    function renderCategoryList() {
+      const list = document.getElementById('categoryListContainer');
+      list.innerHTML = '';
+      categories.forEach((cat, index) => {
+        list.innerHTML += `
+          <div class="flex items-center justify-between p-2 bg-app-bg border border-app-border rounded-lg text-xs">
+            <span class="font-medium text-app-text">${cat}</span>
+            <button onclick="removeCategory(${index})" class="text-rose-500 hover:text-rose-700 p-1">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    async function addNewCategory() {
+      const input = document.getElementById('newCategoryInput');
+      const val = input.value.trim();
+      if (!val) return;
+      if (categories.includes(val)) {
+        alert('Category exists!');
+        return;
+      }
+      categories.push(val);
+      await db.collection("settings").doc("categories").set({ list: categories });
+      input.value = '';
+      renderCategoryList();
+      populateExpenseCategoryDropdowns();
+      showToast('Category added to Firestore!');
+    }
+
+    async function removeCategory(index) {
+      if (confirm(`Delete "${categories[index]}" category?`)) {
+        categories.splice(index, 1);
+        await db.collection("settings").doc("categories").set({ list: categories });
+        renderCategoryList();
+        populateExpenseCategoryDropdowns();
+      }
+    }
+
+    // ==========================================
+    // 9. SUPER MASTER VAULT VIEW
+    // ==========================================
+    function renderVault() {
+      const grid = document.getElementById('vaultGrid');
+      grid.innerHTML = '';
+
+      if (projects.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 text-center py-10 text-app-muted text-xs">No credentials registered in Firestore vault.</div>`;
+        return;
+      }
+
+      projects.forEach(p => {
+        grid.innerHTML += `
+          <div class="bg-app-card border border-app-border p-4 sm:p-5 rounded-xl shadow-sm space-y-3">
+            <div class="flex items-start justify-between border-b border-app-border pb-2">
+              <div>
+                <h4 class="font-bold text-app-text text-sm">${p.softwareName}</h4>
+                <p class="text-xs text-app-muted">${p.clientName}</p>
+              </div>
+              <span class="p-1.5 bg-app-primaryLight text-app-primary rounded-lg"><i data-lucide="key" class="w-4 h-4"></i></span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div>
+                <span class="text-app-muted text-[10px] uppercase font-bold block">Super Master Email:</span>
+                <div class="flex items-center justify-between bg-app-bg px-2.5 py-1 rounded border border-app-border mt-0.5">
+                  <span class="font-mono text-app-text select-all font-medium truncate">${p.superEmail || 'N/A'}</span>
+                  <button onclick="copyToClipboard('${p.superEmail}', 'Email copied!')" class="text-app-muted hover:text-app-primary p-1">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-app-muted text-[10px] uppercase font-bold block">Super Master Password:</span>
+                <div class="flex items-center justify-between bg-app-bg px-2.5 py-1 rounded border border-app-border mt-0.5">
+                  <span id="pass-${p.id}" class="font-mono text-app-primary font-bold">••••••••••••</span>
+                  <div class="flex items-center gap-1">
+                    <button onclick="togglePasswordVisibility('${p.id}', '${encodeURIComponent(p.superPassword || '')}')" class="text-app-muted hover:text-app-primary p-1">
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="copyToClipboard('${p.superPassword || ''}', 'Password copied!')" class="text-app-muted hover:text-app-primary p-1">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            ${p.softwareUrl ? `
+              <div class="pt-2 border-t border-app-border">
+                <a href="${p.softwareUrl}" target="_blank" class="w-full py-1.5 bg-app-bg hover:bg-app-primaryLight text-app-text hover:text-app-primary border border-app-border rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                  <span>Launch Application</span>
+                  <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function togglePasswordVisibility(id, encodedPass) {
+      const span = document.getElementById(`pass-${id}`);
+      const actualPass = decodeURIComponent(encodedPass);
+      span.innerText = span.innerText === '••••••••••••' ? actualPass : '••••••••••••';
+    }
+
+    function copyToClipboard(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg);
+      });
+    }
+
+    // ==========================================
+    // 10. CLOUD TRACKER VIEW
+    // ==========================================
+    function renderCloudTracker() {
+      const tbody = document.getElementById('cloudTableBody');
+      tbody.innerHTML = '';
+
+      let totalCount = projects.length;
+      let expiringCount = 0;
+      let expiredCount = 0;
+
+      projects.forEach(p => {
+        const days = getDaysRemaining(p.cloudExpiryDate);
+        if (days !== null) {
+          if (days <= 30 && days >= 0) expiringCount++;
+          if (days < 0) expiredCount++;
+        }
+      });
+
+      document.getElementById('cloudTotalCount').innerText = totalCount;
+      document.getElementById('cloudExpiringCount').innerText = expiringCount;
+      document.getElementById('cloudExpiredCount').innerText = expiredCount;
+
+      if (projects.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-app-muted text-xs">No active cloud contracts found.</td></tr>`;
+        return;
+      }
+
+      projects.forEach(p => {
+        const days = getDaysRemaining(p.cloudExpiryDate);
+        let badge = `<span class="px-2 py-0.5 rounded text-[11px] bg-app-bg text-app-muted">Unspecified</span>`;
+        let daysText = 'N/A';
+
+        if (days !== null) {
+          if (days < 0) {
+            badge = `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-500/10 text-rose-500 font-bold border border-rose-500/20">Expired</span>`;
+            daysText = `<span class="text-rose-500 font-bold">${Math.abs(days)}d ago</span>`;
+          } else if (days <= 30) {
+            badge = `<span class="px-2 py-0.5 rounded text-[11px] bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20">Expiring Soon</span>`;
+            daysText = `<span class="text-amber-500 font-bold">${days}d Left</span>`;
+          } else {
+            badge = `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/20">Active</span>`;
+            daysText = `<span class="text-app-text">${days}d Left</span>`;
+          }
+        }
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-app-bg/50 border-b border-app-border">
+            <td class="p-3.5">
+              <span class="font-bold text-app-text">${p.softwareName}</span>
+              <p class="text-[11px] text-app-muted">${p.clientName}</p>
+            </td>
+            <td class="p-3.5 font-bold text-app-text">${formatCurrency(p.cloudFee)}</td>
+            <td class="p-3.5 text-app-muted font-mono">${p.cloudExpiryDate || 'Unspecified'}</td>
+            <td class="p-3.5">${daysText}</td>
+            <td class="p-3.5">${badge}</td>
+            <td class="p-3.5 text-right">
+              <button onclick="editProject('${p.id}')" class="px-3 py-1 bg-app-primaryLight hover:bg-app-primary text-app-primary hover:text-white border border-app-border rounded transition text-xs font-semibold">
+                Update
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // 11. PDF EXPORTS & SYSTEM UTILITIES
+    // ==========================================
+    function generateProjectPDF(id) {
+      const p = projects.find(item => item.id === id);
+      if (!p) return;
+
+      const element = document.createElement('div');
+      element.style.padding = '25px';
+      element.style.fontFamily = 'Arial, sans-serif';
+      element.style.color = '#1e293b';
+
+      let modulesHtml = '';
+      if (p.modules && p.modules.length > 0) {
+        p.modules.forEach(m => {
+          modulesHtml += `
+            <tr>
+              <td style="padding: 9px 10px; border: 1px solid #e2e8f0;">
+                <div style="font-weight: bold;">${m.name}</div>
+                <div style="font-size: 10px; color: #64748b;">Software Feature Module</div>
+              </td>
+              <td style="padding: 9px 10px; border: 1px solid #e2e8f0;">${p.paymentMethod || 'Cash'}</td>
+              <td style="padding: 9px 10px; border: 1px solid #e2e8f0;">${p.accountDetails || 'N/A'}</td>
+              <td style="padding: 9px 10px; border: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${formatCurrency(m.price)}</td>
+            </tr>
+          `;
+        });
+      } else {
+        modulesHtml = `
+          <tr>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${p.softwareName} — Production License</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${p.paymentMethod || 'Cash'}</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0;">${p.accountDetails || 'N/A'}</td>
+            <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${formatCurrency(p.totalPrice)}</td>
+          </tr>
+        `;
+      }
+
+      element.innerHTML = `
+        <div style="border-bottom: 2px solid #059669; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h1 style="font-size: 22px; color: #059669; margin: 0; font-weight: bold;">DEVCLIENT SOFTWARE DELIVERY INVOICE</h1>
+            <p style="font-size: 11px; color: #64748b; margin: 3px 0 0 0;">Cloud Verified Software Statement</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="font-size: 12px; margin: 0;"><strong>Invoice ID:</strong> #${p.id.toUpperCase()}</p>
+            <p style="font-size: 11px; margin: 2px 0 0 0; color: #64748b;">Date: ${p.deliveryDate || new Date().toISOString().slice(0, 10)}</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+          <div>
+            <h3 style="font-size: 11px; color: #64748b; margin: 0 0 4px 0; text-transform: uppercase;">BILLED TO:</h3>
+            <p style="font-size: 14px; font-weight: bold; margin: 0;">${p.clientName}</p>
+            <p style="font-size: 12px; margin: 3px 0 0 0;">Phone: <strong>${p.clientPhone || 'N/A'}</strong></p>
+            <p style="font-size: 12px; margin: 2px 0 0 0;">Address: ${p.clientAddress || 'N/A'}</p>
+          </div>
+          <div style="text-align: right;">
+            <h3 style="font-size: 11px; color: #64748b; margin: 0 0 4px 0; text-transform: uppercase;">PLATFORM:</h3>
+            <p style="font-size: 14px; font-weight: bold; color: #059669; margin: 0;">${p.softwareName}</p>
+            <p style="font-size: 12px; margin: 3px 0 0 0;">URL: ${p.softwareUrl || 'Self-Hosted'}</p>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+          <thead>
+            <tr style="background: #e2e8f0; text-align: left;">
+              <th style="padding: 8px; border: 1px solid #cbd5e1;">Description / Module</th>
+              <th style="padding: 8px; border: 1px solid #cbd5e1;">Payment Mode</th>
+              <th style="padding: 8px; border: 1px solid #cbd5e1;">Account Reference</th>
+              <th style="padding: 8px; border: 1px solid #cbd5e1; text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${modulesHtml}
+            <tr style="background: #f8fafc;">
+              <td style="padding: 10px; border: 1px solid #e2e8f0;">Annual Cloud Maintenance (Renews: ${p.cloudExpiryDate || 'Unspecified'})</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0;">Hosting Contract</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0;">Cloud / VPS Server</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: right; font-weight: bold;">${formatCurrency(p.cloudFee)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 25px;">
+          <div style="width: 260px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>Total Contract:</span>
+              <span style="font-weight: bold;">${formatCurrency(p.totalPrice)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #059669;">
+              <span>Amount Received:</span>
+              <span style="font-weight: bold;">${formatCurrency(p.paidAmount)}</span>
+            </div>
+            <div style="border-top: 1px solid #cbd5e1; padding-top: 4px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; color: ${p.pendingAmount > 0 ? '#e11d48' : '#059669'};">
+              <span>Remaining Balance:</span>
+              <span>${p.pendingAmount > 0 ? formatCurrency(p.pendingAmount) : 'Settled / Nil'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 12px; font-size: 10px; color: #64748b; text-align: center;">
+          <p style="margin: 0;">Official Firebase Cloud Verified Software Statement. Confidential passwords omitted.</p>
+        </div>
+      `;
+
+      html2pdf().from(element).set({
+        margin: 10,
+        filename: `${p.softwareName.replace(/\s+/g, '_')}_Invoice.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+      showToast('PDF invoice downloaded!');
+    }
+
+    function downloadProjectsReportPDF() {
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Arial, sans-serif';
+
+      let rowsHtml = '';
+      let grandTotal = 0;
+      let grandPaid = 0;
+      let grandPending = 0;
+
+      projects.forEach(p => {
+        grandTotal += Number(p.totalPrice || 0);
+        grandPaid += Number(p.paidAmount || 0);
+        grandPending += Number(p.pendingAmount || 0);
+
+        rowsHtml += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${p.softwareName}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${p.clientName}<br><small style="color: #64748b;">${p.clientPhone || ''}</small></td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${p.paymentMethod || 'Cash'}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">${formatCurrency(p.totalPrice)}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #059669; font-weight: bold;">${formatCurrency(p.paidAmount)}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: ${p.pendingAmount > 0 ? '#e11d48' : '#64748b'}; font-weight: bold;">${p.pendingAmount > 0 ? formatCurrency(p.pendingAmount) : 'Settled'}</td>
+          </tr>
+        `;
+      });
+
+      element.innerHTML = `
+        <div style="border-bottom: 2px solid #059669; padding-bottom: 8px; margin-bottom: 12px;">
+          <h2 style="color: #059669; margin: 0; font-size: 18px;">DELIVERED SOFTWARES &amp; CONTRACTS REPORT</h2>
+          <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Report Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+          <thead>
+            <tr style="background: #f1f5f9; text-align: left;">
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Software</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Client Contact</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Method</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">Contract</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">Received</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">Pending</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot>
+            <tr style="background: #f8fafc; font-weight: bold;">
+              <td colspan="3" style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+              <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">${formatCurrency(grandTotal)}</td>
+              <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #059669;">${formatCurrency(grandPaid)}</td>
+              <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #e11d48;">${formatCurrency(grandPending)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+
+      html2pdf().from(element).set({
+        margin: 8,
+        filename: `Delivered_Softwares_${new Date().toISOString().slice(0, 10)}.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      }).save();
+    }
+
+    function downloadExpensesReportPDF() {
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Arial, sans-serif';
+
+      let total = 0;
+      let rowsHtml = '';
+      expenses.forEach(e => {
+        total += Number(e.amount || 0);
+        rowsHtml += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${e.date || 'N/A'}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${e.category}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${e.description}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${e.paymentMethod || 'Cash'}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; color: #e11d48;">${formatCurrency(e.amount)}</td>
+          </tr>
+        `;
+      });
+
+      element.innerHTML = `
+        <div style="border-bottom: 2px solid #d97706; padding-bottom: 8px; margin-bottom: 12px;">
+          <h2 style="color: #d97706; margin: 0; font-size: 18px;">OFFICE EXPENSES SUMMARY REPORT</h2>
+          <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Report Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+          <thead>
+            <tr style="background: #fef3c7; text-align: left;">
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Date</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Category</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Description</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Method</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot>
+            <tr style="background: #fffbeb; font-weight: bold;">
+              <td colspan="4" style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+              <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #e11d48;">${formatCurrency(total)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+
+      html2pdf().from(element).set({
+        margin: 10,
+        filename: `Expenses_${new Date().toISOString().slice(0, 10)}.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+    }
+
+    function downloadCloudReportPDF() {
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Arial, sans-serif';
+
+      let rowsHtml = '';
+      let totalFee = 0;
+
+      projects.forEach(p => {
+        totalFee += Number(p.cloudFee || 0);
+        rowsHtml += `
+          <tr>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${p.softwareName}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${p.clientName}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1;">${p.cloudExpiryDate || 'Unspecified'}</td>
+            <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold;">${formatCurrency(p.cloudFee)}</td>
+          </tr>
+        `;
+      });
+
+      element.innerHTML = `
+        <div style="border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 12px;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 18px;">CLOUD RENEWALS SCHEDULE</h2>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+          <thead>
+            <tr style="background: #eff6ff;">
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Platform</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Client</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1;">Expiry</th>
+              <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">Fee</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot>
+            <tr style="font-weight: bold; background: #f8fafc;">
+              <td colspan="3" style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+              <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: right; color: #2563eb;">${formatCurrency(totalFee)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+
+      html2pdf().from(element).set({
+        margin: 10,
+        filename: `Cloud_Renewals_${new Date().toISOString().slice(0, 10)}.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+    }
+
+    function exportData() {
+      const fullBackup = { projects, expenses, categories, exportDate: new Date().toISOString() };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `DevClient_CloudBackup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Cloud Database JSON backup downloaded!');
+    }
+
+    // UI Helper Functions
+    function toggleAccountDetailsField() {
+      const method = document.getElementById('paymentMethod').value;
+      const container = document.getElementById('accountDetailsContainer');
+      const input = document.getElementById('accountDetails');
+      if (method === 'Cash') {
+        container.classList.add('hidden');
+        input.removeAttribute('required');
+        input.value = 'Cash in Hand';
+      } else {
+        container.classList.remove('hidden');
+        input.setAttribute('required', 'true');
+        if (input.value === 'Cash in Hand') input.value = '';
+      }
+    }
+
+    function openMobileSidebar() {
+      document.getElementById('mainSidebar').classList.add('mobile-open');
+      document.getElementById('mobileBackdrop').classList.remove('hidden');
+    }
+
+    function closeMobileSidebar() {
+      document.getElementById('mainSidebar').classList.remove('mobile-open');
+      document.getElementById('mobileBackdrop').classList.add('hidden');
+    }
+
+    function toggleSidebar() {
+      isSidebarCollapsed = !isSidebarCollapsed;
+      localStorage.setItem('devmaster_sidebar_collapsed', isSidebarCollapsed);
+      applySidebarCollapsed(isSidebarCollapsed);
+    }
+
+    function applySidebarCollapsed(collapse) {
+      const sidebar = document.getElementById('mainSidebar');
+      const toggleIcon = document.getElementById('sidebarToggleIcon');
+      if (collapse) {
+        sidebar.classList.add('sidebar-collapsed');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-right');
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'chevron-left');
+      }
+      lucide.createIcons();
+    }
+
+    function setTheme(themeName) {
+      currentTheme = themeName;
+      localStorage.setItem('devmaster_theme_key', themeName);
+      applyTheme(themeName);
+      showToast(`Visual theme updated to ${themeName.toUpperCase()}`);
+    }
+
+    function applyTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+      ['emerald', 'dark', 'navy', 'gold'].forEach(t => {
+        const card = document.getElementById(`theme-card-${t}`);
+        if (card) {
+          if (t === themeName) {
+            card.classList.add('ring-2', 'ring-offset-2', 'ring-emerald-500', 'border-emerald-500');
+          } else {
+            card.classList.remove('ring-2', 'ring-offset-2', 'ring-emerald-500', 'border-emerald-500');
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
